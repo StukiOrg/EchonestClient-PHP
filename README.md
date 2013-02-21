@@ -8,7 +8,7 @@ Installation
 
      ```json
      "require": {
-        "gracenote/gracenote": "dev-master"
+        "echonest/echonest": "dev-master"
      }
      ```
   2. install composer via `curl -s http://getcomposer.org/installer | php` (on windows, download
