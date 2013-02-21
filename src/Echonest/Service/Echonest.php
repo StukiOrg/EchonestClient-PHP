@@ -43,8 +43,8 @@ final class Echonest {
         $http->setMethod('GET');
 
         $options['api_key'] = self::getApiKey();
-        if (!$options['format']) $options['format'] = 'json';
-        $http->setGetParameters($options);
+        if (!isset($options['format'])) $options['format'] = 'json';
+        $http->setParameterGet($options);
 
         $response = $http->send();
         return Json::decode($response->getBody());
