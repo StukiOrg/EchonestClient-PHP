@@ -8,9 +8,11 @@
         "music",
         "zf2"
     ],
-    "require": {
+     "require": {
         "php": ">=5.3.3",
-        "zendframework/zendframework": "2.*,!=2.0.6"
+        "zendframework/zend-http": "2.*,!=2.0.6",
+        "zendframework/zend-json": "2.*,!=2.0.6",
+        "zendframework/zend-i18n": "2.*,!=2.0.6" 
     },
     "homepage": "http://developer.echonest.com/docs/v4/contents.html",
     "authors": [
