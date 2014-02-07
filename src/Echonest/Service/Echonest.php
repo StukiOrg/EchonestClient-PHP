@@ -39,10 +39,15 @@ final class Echonest {
         $http->setOptions(array('sslverifypeer' => false));
         $http->setMethod('GET');
 
+        $format = "json";
         if(is_array($options)) {
             $http->setUri( self::$source . $api . '/' . $command);
             $options['api_key'] = self::getApiKey();
-            if (!isset($options['format'])) $options['format'] = 'json';
+
+            if (!isset($options['format']))
+                $options['format'] = $format;
+            else
+                $format = $options['format'];
 
             $http->setParameterGet($options);
         }
@@ -54,10 +59,20 @@ final class Echonest {
             if( !strpos($options, "api_key") )
                 $options .= "&api_key=" . self::getApiKey();
 
+            #find format in query string
+            preg_match('/format=([^&]+)&/', $options, $matches);
+            if( is_array($matches) )
+                $format = $matches[1] ? $matches[1] : "json";
+
             $http->setUri( self::$source . $api . '/' . $command . '?' . $options );
         }
 
         $response = $http->send();
-        return Json::decode($response->getBody());
+
+        #output response according to format
+        if( $format == "xml" )
+            return simplexml_load_string($response->getBody());
+        else
+            return Json::decode( $response->getBody() );
     }
 }
