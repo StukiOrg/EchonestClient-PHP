@@ -15,7 +15,7 @@ use Zend\I18n\Validator\Alnum as Alnum;
 final class Echonest {
 
     static private $apiKey;
-    static private $source = 'http://developer.echonest.com/api/v4/';
+    static private $source;
 
     static public function getApiKey() {
         return self::$apiKey;
@@ -25,54 +25,63 @@ final class Echonest {
         self::$apiKey = $value;
     }
 
-    static public function configure($apiKey) {
+    static public function configure(
+        $apiKey,
+        $source = 'http://developer.echonest.com/api/v4/' # include trailing slash
+    ) {
         self::setApiKey($apiKey);
+        self::$source = $source;
     }
 
     static public function query($api, $command, $options = null) {
         // Validate configuration
-        if (!self::getApiKey())
+        if (!self::getApiKey()) {
             throw new \Exception('Echonest has not been configured');
+        }
 
         $http = new Client();
-        $http->setUri('http://developer.echonest.com/api/v4/' . $api . '/' . $command);
+        $http->setUri(self::$source . $api . '/' . $command);
         $http->setOptions(array('sslverifypeer' => false));
         $http->setMethod('GET');
 
-        $format = "json";
+        $format = 'json';
+
         if(is_array($options)) {
             $http->setUri( self::$source . $api . '/' . $command);
             $options['api_key'] = self::getApiKey();
 
-            if (!isset($options['format']))
+            if (!isset($options['format'])) {
                 $options['format'] = $format;
-            else
+            } else {
                 $format = $options['format'];
+            }
 
             $http->setParameterGet($options);
-        }
-        #options as a query string
-        else {
-            if(!$options ) 
-                throw new \Exception( "The parameters must bt an array or a non empty string" );
+        } else {
+            #options as a query string
+            if (!$options )
+                throw new \Exception( "The options must be an array or a non empty string" );
 
-            if( !strpos($options, "api_key") )
-                $options .= "&api_key=" . self::getApiKey();
+            if (!strpos($options, 'api_key'))
+                $options .= '&api_key=' . self::getApiKey();
 
             #find format in query string
             preg_match('/format=([^&]+)&/', $options, $matches);
-            if( is_array($matches) )
-                $format = $matches[1] ? $matches[1] : "json";
 
-            $http->setUri( self::$source . $api . '/' . $command . '?' . $options );
+            if (is_array($matches)) {
+                $format = $matches[1] ? $matches[1] : 'json';
+            }
+
+            $http->setUri(self::$source . $api . '/' . $command . '?' . $options);
         }
 
         $response = $http->send();
 
         #output response according to format
-        if( $format == "xml" )
+        if ($format == 'xml') {
             return simplexml_load_string($response->getBody());
-        else
-            return Json::decode( $response->getBody() );
+        } else {
+            return Json::decode($response->getBody());
+        }
     }
 }
