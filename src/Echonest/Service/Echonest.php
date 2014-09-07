@@ -1,8 +1,6 @@
 <?php
 /**
  * Echonest PHP Library
- *
- * @version 1.0.0
  */
 
 namespace Echonest\Service;
@@ -12,28 +10,32 @@ use Zend\Http\Headers;
 use Zend\Json\Json;
 use Zend\I18n\Validator\Alnum as Alnum;
 
-final class Echonest {
-
+final class Echonest
+{
     static private $apiKey;
     static private $source;
 
-    static public function getApiKey() {
+    static public function getApiKey()
+    {
         return self::$apiKey;
     }
 
-    static public function setApiKey($value) {
+    static public function setApiKey($value)
+    {
         self::$apiKey = $value;
     }
 
     static public function configure(
         $apiKey,
         $source = 'http://developer.echonest.com/api/v4/' # include trailing slash
-    ) {
+    )
+    {
         self::setApiKey($apiKey);
         self::$source = $source;
     }
 
-    static public function query($api, $command, $options = null) {
+    static public function query($api, $command, $options = null)
+    {
         // Validate configuration
         if (!self::getApiKey()) {
             throw new \Exception('Echonest has not been configured');
@@ -56,7 +58,13 @@ final class Echonest {
                 $format = $options['format'];
             }
 
-            $http->setParameterGet($options);
+            // Build query manually as $http->setParameterGet builds arrays properly:
+            // echonest api is not standard :/
+            // We need ?bucket=audio_summary&bucket=artist_discovery NOT ?bucket[0]=audio_summary&bucket[1]=artist_discovery
+
+            //strip array indexes
+            $http_query=preg_replace('/%5B[0-9]+%5D/simU', '', http_build_query($options));
+            $http->setUri(self::$source . $api . '/' . $command . '?' . $http_query);
         } else {
             #options as a query string
             if (!$options )
