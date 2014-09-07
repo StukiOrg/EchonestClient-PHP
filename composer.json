@@ -23,8 +23,8 @@
         }
     ],
     "autoload": {
-        "psr-0": {
-            "Echonest": "src/"
+        "psr-4": {
+            "Echonest\\": "src/"
         }
     }
 }
